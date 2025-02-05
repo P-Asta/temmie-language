@@ -48,7 +48,6 @@ pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
             }
 
             let num_str: String = code[start..i].iter().collect();
-            println!("{:?}", num_str);
             if dot_cnt == 0 {
                 tokens.push(Token::Number(num_str.parse().unwrap()));
                 continue 'main;
@@ -59,6 +58,22 @@ pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
             } else {
                 panic!("{num_str} is Invalid number");
             }
+        }
+        if c == '"' {
+            let start = i + 1;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    panic!("Invalid string");
+                }
+                if c == '"' {
+                    break 'sub;
+                }
+            }
+            let str_value = code[start..i].iter().collect();
+            tokens.push(Token::String(str_value));
+            i += 1;
         }
     }
     tokens
