@@ -9,11 +9,12 @@ pub enum Symbol {
 
 #[derive(Debug)]
 pub enum Token {
-    Number(isize),
+    Integer(isize),
     Float(f64),
     String(String),
+    Boolean(bool),
     Identifier(String),
-    Symbol(String),
+    Symbol(Symbol),
 }
 pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
     let mut i = 0;
@@ -49,7 +50,7 @@ pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
 
             let num_str: String = code[start..i].iter().collect();
             if dot_cnt == 0 {
-                tokens.push(Token::Number(num_str.parse().unwrap()));
+                tokens.push(Token::Integer(num_str.parse().unwrap()));
                 continue 'main;
             }
             if dot_cnt == 1 {
@@ -73,6 +74,66 @@ pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
             }
             let str_value = code[start..i].iter().collect();
             tokens.push(Token::String(str_value));
+            i += 1;
+        }
+        if c == 't' || c == 'f' {
+            let start = i;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    break 'sub;
+                }
+                if c.is_alphabetic() {
+                    continue 'sub;
+                } else {
+                    break 'sub;
+                }
+            }
+            let bool_str: String = code[start..i].iter().collect();
+            if bool_str == "true" {
+                tokens.push(Token::Boolean(true));
+            } else if bool_str == "false" {
+                tokens.push(Token::Boolean(false));
+            } else {
+                i = start;
+            }
+        }
+        if c.is_alphabetic() {
+            let start = i;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    break 'sub;
+                }
+                if c.is_alphabetic() {
+                    continue 'sub;
+                } else {
+                    break 'sub;
+                }
+            }
+            let id_str: String = code[start..i].iter().collect();
+            tokens.push(Token::Identifier(id_str));
+        }
+        if c == '=' {
+            tokens.push(Token::Symbol(Symbol::Equal));
+            i += 1;
+        }
+        if c == '+' {
+            tokens.push(Token::Symbol(Symbol::Plus));
+            i += 1;
+        }
+        if c == '-' {
+            tokens.push(Token::Symbol(Symbol::Minus));
+            i += 1;
+        }
+        if c == '*' {
+            tokens.push(Token::Symbol(Symbol::Multiply));
+            i += 1;
+        }
+        if c == '/' {
+            tokens.push(Token::Symbol(Symbol::Divide));
             i += 1;
         }
     }
