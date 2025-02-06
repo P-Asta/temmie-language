@@ -1,3 +1,5 @@
+use crate::log;
+
 #[derive(Debug)]
 pub enum Symbol {
     Equal,
@@ -16,16 +18,26 @@ pub enum Token {
     Identifier(String),
     Symbol(Symbol),
 }
-pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
+pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
     let mut i = 0;
+    let mut reading_x = 1;
+    let mut reading_y = 1;
     let mut tokens = Vec::new();
+    let log = log::Logging::new(path);
     'main: loop {
         let c = code[i];
+        reading_x += 1;
         if c == '\0' {
             break 'main;
         }
         if c == ' ' {
             i += 1;
+            continue;
+        }
+        if c == '\n' {
+            i += 1;
+            reading_y += 1;
+            reading_x = 1;
             continue;
         }
         if c.is_numeric() {
@@ -57,7 +69,10 @@ pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
                 tokens.push(Token::Float(num_str.parse().unwrap()));
                 continue 'main;
             } else {
-                panic!("{num_str} is Invalid number");
+                log.error(
+                    (reading_y, reading_x),
+                    format!("{num_str} is Invalid number"),
+                );
             }
         }
         if c == '"' {
@@ -66,7 +81,7 @@ pub fn tokenizer(code: Vec<char>) -> Vec<Token> {
                 i += 1;
                 let c = code[i];
                 if c == '\0' {
-                    panic!("Invalid string");
+                    log.error((reading_y, reading_x), format!("Invalid string"));
                 }
                 if c == '"' {
                     break 'sub;

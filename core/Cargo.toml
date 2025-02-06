@@ -1,0 +1,7 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+colorfully = "0.2.2"
