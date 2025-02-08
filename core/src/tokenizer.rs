@@ -1,29 +1,12 @@
 use crate::log;
+use crate::token::*;
 
-#[derive(Debug)]
-pub enum Symbol {
-    Equal,
-    Plus,
-    Minus,
-    Multiply,
-    Divide,
-}
-
-#[derive(Debug)]
-pub enum Token {
-    Integer(isize),
-    Float(f64),
-    String(String),
-    Boolean(bool),
-    Identifier(String),
-    Symbol(Symbol),
-}
 pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
     let mut i = 0;
     let mut reading_x = 1;
     let mut reading_y = 1;
     let mut tokens = Vec::new();
-    let log = log::Logging::new(path);
+    let log = log::Logging::new(path.clone());
     'main: loop {
         let c = code[i];
         reading_x += 1;
@@ -116,40 +99,84 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
         }
         if c.is_alphabetic() {
             let start = i;
+            let mut arg_start = 0;
+            let id_str: String;
             'sub: loop {
                 i += 1;
                 let c = code[i];
+
                 if c == '\0' {
+                    id_str = code[start..i].iter().collect();
                     break 'sub;
-                }
-                if c.is_alphabetic() {
+                } else if c.is_alphabetic() {
                     continue 'sub;
+                } else if c == '(' {
+                    id_str = code[start..i].iter().collect();
+                    arg_start = i;
+                    loop {
+                        i += 1;
+                        let c = code[i];
+                        if c == '\0' {
+                            log.error(
+                                (reading_y, arg_start - start),
+                                "Invalid argument".to_string(),
+                            );
+                        } else if c == ')' {
+                            i += 1;
+                            break 'sub;
+                        }
+                    }
                 } else {
+                    id_str = code[start..i].iter().collect();
                     break 'sub;
                 }
             }
-            let id_str: String = code[start..i].iter().collect();
-            tokens.push(Token::Identifier(id_str));
+            if arg_start == 0 {
+                tokens.push(Token::Identifier(id_str));
+            } else {
+                let mut args = code[arg_start + 1..i - 1].to_vec();
+                args.push('\0');
+                let mut args = tokenizer(path.clone(), args);
+                let mut remove_comma_count = 0;
+                for i in 1..=args.len() / 2 {
+                    if args[(i * 2 - 1) - remove_comma_count] != Token::Symbol(Symbol::Comma) {
+                        log.error(
+                            (reading_y, arg_start - start),
+                            "Invalid argument".to_string(),
+                        );
+                    }
+                    args.remove((i * 2 - 1) - remove_comma_count);
+                    remove_comma_count += 1;
+                }
+                tokens.push(Token::Function(id_str, args));
+            }
         }
-        if c == '=' {
-            tokens.push(Token::Symbol(Symbol::Equal));
-            i += 1;
-        }
-        if c == '+' {
-            tokens.push(Token::Symbol(Symbol::Plus));
-            i += 1;
-        }
-        if c == '-' {
-            tokens.push(Token::Symbol(Symbol::Minus));
-            i += 1;
-        }
-        if c == '*' {
-            tokens.push(Token::Symbol(Symbol::Multiply));
-            i += 1;
-        }
-        if c == '/' {
-            tokens.push(Token::Symbol(Symbol::Divide));
-            i += 1;
+        match c {
+            ',' => {
+                tokens.push(Token::Symbol(Symbol::Comma));
+                i += 1;
+            }
+            '=' => {
+                tokens.push(Token::Symbol(Symbol::Equal));
+                i += 1;
+            }
+            '+' => {
+                tokens.push(Token::Symbol(Symbol::Plus));
+                i += 1;
+            }
+            '-' => {
+                tokens.push(Token::Symbol(Symbol::Minus));
+                i += 1;
+            }
+            '*' => {
+                tokens.push(Token::Symbol(Symbol::Multiply));
+                i += 1;
+            }
+            '/' => {
+                tokens.push(Token::Symbol(Symbol::Divide));
+                i += 1;
+            }
+            _ => {}
         }
     }
     tokens
