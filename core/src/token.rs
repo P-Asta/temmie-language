@@ -17,4 +17,6 @@ pub enum Token {
     Boolean(bool),
     Identifier(String),
     Symbol(Symbol),
+    Block(Vec<Token>),
+    Repeat(isize),
 }

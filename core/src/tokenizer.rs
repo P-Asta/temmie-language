@@ -74,6 +74,35 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             tokens.push(Token::String(str_value));
             i += 1;
         }
+
+        if c == '{' {
+            let block_start = i + 1;
+            let block_end;
+            let mut block_count = 1;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    log.error((reading_y, reading_x), format!("Invalid block"));
+                }
+                if c == '{' {
+                    block_count += 1;
+                }
+                if c == '}' {
+                    block_count -= 1;
+                    if block_count == 0 {
+                        block_end = i;
+                        break 'sub;
+                    }
+                }
+            }
+            let mut block_code = code[block_start..block_end].to_vec();
+            block_code.push('\0');
+            let block_token = tokenizer(path.clone(), block_code);
+            tokens.push(Token::Block(block_token));
+            i += 1;
+        }
+
         if c == 't' || c == 'f' {
             let start = i;
             'sub: loop {
@@ -132,6 +161,9 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 }
             }
             if arg_start == 0 {
+                if id_str == "\n" {
+                    continue;
+                }
                 tokens.push(Token::Identifier(id_str));
             } else {
                 let mut args = code[arg_start + 1..i - 1].to_vec();

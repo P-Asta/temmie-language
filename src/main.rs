@@ -16,7 +16,7 @@ fn main() {
     let mut code = std::fs::read_to_string(&path).unwrap();
     code.push('\0');
     print!(
-        "{:?}",
+        "{:#?}",
         tokenizer::tokenizer(path.to_string(), code.chars().collect())
     );
 }
