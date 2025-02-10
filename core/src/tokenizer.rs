@@ -102,6 +102,39 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             tokens.push(Token::Block(block_token));
             i += 1;
         }
+        if c == '[' {
+            let array_start = i + 1;
+            let array_end;
+            let mut array_count = 1;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    log.error((reading_y, reading_x), format!("Invalid block"));
+                }
+                if c == '[' {
+                    array_count += 1;
+                }
+                if c == ']' {
+                    array_count -= 1;
+                    if array_count == 0 {
+                        array_end = i;
+                        break 'sub;
+                    }
+                }
+            }
+            let mut array_code = code[array_start..array_end].to_vec();
+            array_code.push('\0');
+            let array_token = remove_comma(
+                tokenizer(path.clone(), array_code),
+                reading_y,
+                array_start,
+                0,
+                &log,
+            );
+            tokens.push(Token::Array(array_token));
+            i += 1;
+        }
 
         if c == 't' || c == 'f' {
             let start = i;
@@ -126,6 +159,41 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 i = start;
             }
         }
+
+        if c == 'r' {
+            let start = i;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    break 'sub;
+                }
+                if c.is_alphabetic() {
+                    continue 'sub;
+                } else {
+                    break 'sub;
+                }
+            }
+            let bool_str: String = code[start..i].iter().collect();
+            if bool_str == "return" {
+                let start = i + 1;
+                'sub: loop {
+                    i += 1;
+                    let c = code[i];
+                    if c == '\0' {
+                        break 'sub;
+                    }
+                    if c == '\n' {
+                        break 'sub;
+                    }
+                }
+                let mut return_code = code[start..i].to_vec();
+                return_code.push('\0');
+                let return_token = tokenizer(path.clone(), return_code);
+                tokens.push(Token::Return(return_token));
+            }
+        }
+
         if c.is_alphabetic() {
             let start = i;
             let mut arg_start = 0;
@@ -168,18 +236,14 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             } else {
                 let mut args = code[arg_start + 1..i - 1].to_vec();
                 args.push('\0');
-                let mut args = tokenizer(path.clone(), args);
-                let mut remove_comma_count = 0;
-                for i in 1..=args.len() / 2 {
-                    if args[(i * 2 - 1) - remove_comma_count] != Token::Symbol(Symbol::Comma) {
-                        log.error(
-                            (reading_y, arg_start - start),
-                            "Invalid argument".to_string(),
-                        );
-                    }
-                    args.remove((i * 2 - 1) - remove_comma_count);
-                    remove_comma_count += 1;
-                }
+                let args = remove_comma(
+                    tokenizer(path.clone(), args),
+                    reading_y,
+                    arg_start,
+                    start,
+                    &log,
+                );
+
                 tokens.push(Token::Function(id_str, args));
             }
         }
@@ -212,4 +276,26 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
         }
     }
     tokens
+}
+
+fn remove_comma(
+    args: Vec<Token>,
+    reading_y: usize,
+    arg_start: usize,
+    start: usize,
+    log: &log::Logging,
+) -> Vec<Token> {
+    let mut args = args;
+    let mut remove_comma_count = 0;
+    for i in 1..=args.len() / 2 {
+        if args[(i * 2 - 1) - remove_comma_count] != Token::Symbol(Symbol::Comma) {
+            log.error(
+                (reading_y, arg_start - start),
+                "Invalid argument".to_string(),
+            );
+        }
+        args.remove((i * 2 - 1) - remove_comma_count);
+        remove_comma_count += 1;
+    }
+    args
 }

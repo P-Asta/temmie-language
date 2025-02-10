@@ -18,5 +18,7 @@ pub enum Token {
     Identifier(String),
     Symbol(Symbol),
     Block(Vec<Token>),
+    Array(Vec<Token>),
     Repeat(isize),
+    Return(Vec<Token>),
 }
