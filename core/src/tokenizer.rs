@@ -1,6 +1,28 @@
 use crate::log;
 use crate::token::*;
 
+fn remove_comma(
+    args: Vec<Token>,
+    reading_y: usize,
+    arg_start: usize,
+    start: usize,
+    log: &log::Logging,
+) -> Vec<Token> {
+    let mut args = args;
+    let mut remove_comma_count = 0;
+    for i in 1..=args.len() / 2 {
+        if args[(i * 2 - 1) - remove_comma_count] != Token::Symbol(Symbol::Comma) {
+            log.error(
+                (reading_y, arg_start - start),
+                "Invalid argument".to_string(),
+            );
+        }
+        args.remove((i * 2 - 1) - remove_comma_count);
+        remove_comma_count += 1;
+    }
+    args
+}
+
 pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
     let mut i = 0;
     let mut reading_x = 1;
@@ -276,26 +298,4 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
         }
     }
     tokens
-}
-
-fn remove_comma(
-    args: Vec<Token>,
-    reading_y: usize,
-    arg_start: usize,
-    start: usize,
-    log: &log::Logging,
-) -> Vec<Token> {
-    let mut args = args;
-    let mut remove_comma_count = 0;
-    for i in 1..=args.len() / 2 {
-        if args[(i * 2 - 1) - remove_comma_count] != Token::Symbol(Symbol::Comma) {
-            log.error(
-                (reading_y, arg_start - start),
-                "Invalid argument".to_string(),
-            );
-        }
-        args.remove((i * 2 - 1) - remove_comma_count);
-        remove_comma_count += 1;
-    }
-    args
 }
