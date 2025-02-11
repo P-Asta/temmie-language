@@ -76,7 +76,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             } else {
                 log.error(
                     (reading_y, reading_x),
-                    format!("{num_str} is Invalid number"),
+                    format!("Invalid number format: '{num_str}' contains multiple decimal points"),
                 );
             }
         }
@@ -86,7 +86,10 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 i += 1;
                 let c = code[i];
                 if c == '\0' {
-                    log.error((reading_y, reading_x), format!("Invalid string"));
+                    log.error(
+                        (reading_y, reading_x),
+                        "Unterminated string literal: missing closing quote".to_string(),
+                    );
                 }
                 if c == '"' {
                     break 'sub;
@@ -105,7 +108,10 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 i += 1;
                 let c = code[i];
                 if c == '\0' {
-                    log.error((reading_y, reading_x), format!("Invalid block"));
+                    log.error(
+                        (reading_y, reading_x),
+                        "Unterminated block: missing closing brace '}'".to_string(),
+                    );
                 }
                 if c == '{' {
                     block_count += 1;
@@ -132,7 +138,10 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 i += 1;
                 let c = code[i];
                 if c == '\0' {
-                    log.error((reading_y, reading_x), format!("Invalid block"));
+                    log.error(
+                        (reading_y, reading_x),
+                        "Unterminated array: missing closing bracket ']'".to_string(),
+                    );
                 }
                 if c == '[' {
                     array_count += 1;
@@ -172,10 +181,10 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                     break 'sub;
                 }
             }
-            let bool_str: String = code[start..i].iter().collect();
-            if bool_str == "true" {
+            let code_str: String = code[start..i].iter().collect();
+            if code_str == "true" {
                 tokens.push(Token::Boolean(true));
-            } else if bool_str == "false" {
+            } else if code_str == "false" {
                 tokens.push(Token::Boolean(false));
             } else {
                 i = start;
@@ -196,8 +205,8 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                     break 'sub;
                 }
             }
-            let bool_str: String = code[start..i].iter().collect();
-            if bool_str == "return" {
+            let code_str: String = code[start..i].iter().collect();
+            if code_str == "return" {
                 let start = i + 1;
                 'sub: loop {
                     i += 1;
@@ -213,6 +222,45 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 return_code.push('\0');
                 let return_token = tokenizer(path.clone(), return_code);
                 tokens.push(Token::Return(return_token));
+            } else if code_str == "repeat" {
+                let start = i + 1;
+                'sub: loop {
+                    i += 1;
+                    let c = code[i];
+                    if c == '\0' {
+                        break 'sub;
+                    }
+                    if c == '{' {
+                        break 'sub;
+                    }
+                }
+                let mut repeat_code = code[start..i].to_vec();
+                i -= 1;
+                repeat_code.push('\0');
+                let repeat_token = tokenizer(path.clone(), repeat_code);
+                match &repeat_token[0] {
+                    Token::Integer(i) => {
+                        if i <= &0 {
+                            log.error(
+                                (reading_y, start - 1),
+                                format!("Invalid repeat count: must be greater than 0, got {i}"),
+                            );
+                        }
+                        tokens.push(Token::Repeat(Box::new(Token::Integer(*i))));
+                    }
+                    Token::Identifier(i) => {
+                        tokens.push(Token::Repeat(Box::new(Token::Identifier(i.to_owned()))));
+                    }
+                    _ => {
+                        log.error(
+                            (reading_y, start - 1),
+                            "Invalid repeat expression: must be an integer or identifier"
+                                .to_string(),
+                        );
+                    }
+                }
+            } else {
+                i = start;
             }
         }
 
@@ -238,7 +286,8 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                         if c == '\0' {
                             log.error(
                                 (reading_y, arg_start - start),
-                                "Invalid argument".to_string(),
+                                "Invalid function call: missing closing parenthesis ')'"
+                                    .to_string(),
                             );
                         } else if c == ')' {
                             i += 1;
@@ -251,7 +300,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 }
             }
             if arg_start == 0 {
-                if id_str == "\n" {
+                if id_str == "\n" || id_str == " " {
                     continue;
                 }
                 tokens.push(Token::Identifier(id_str));

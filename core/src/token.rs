@@ -19,6 +19,6 @@ pub enum Token {
     Symbol(Symbol),
     Block(Vec<Token>),
     Array(Vec<Token>),
-    Repeat(isize),
+    Repeat(Box<Token>),
     Return(Vec<Token>),
 }
