@@ -7,20 +7,27 @@ fn remove_comma(
     arg_start: usize,
     start: usize,
     log: &log::Logging,
-) -> Vec<Token> {
-    let mut args = args;
+) -> Vec<Vec<Token>> {
+    let mut result_args = vec![];
     let mut remove_comma_count = 0;
-    for i in 1..=args.len() / 2 {
-        if args[(i * 2 - 1) - remove_comma_count] != Token::Symbol(Symbol::Comma) {
-            log.error(
-                (reading_y, arg_start - start),
-                "Invalid argument".to_string(),
-            );
+    let mut arg = vec![];
+    for i in 0..args.len() {
+        if let Token::Symbol(Symbol::Comma) = args[i] {
+            if arg.len() == 0 {
+                log.error(
+                    (reading_y, arg_start - start + remove_comma_count),
+                    "Invalid comma: unexpected comma".to_string(),
+                );
+            }
+            result_args.push(arg);
+            arg = vec![];
+            remove_comma_count += 1;
+        } else {
+            arg.push(args[i].clone());
         }
-        args.remove((i * 2 - 1) - remove_comma_count);
-        remove_comma_count += 1;
     }
-    args
+    result_args.push(arg);
+    result_args
 }
 
 pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
