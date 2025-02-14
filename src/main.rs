@@ -12,7 +12,7 @@ pub struct Arg {
 fn main() {
     // let args = Arg::parse();
     // let path = args.path.clone();
-    let path = "test/main.fur";
+    let path = "test/main.tem";
     let mut code = std::fs::read_to_string(&path).unwrap();
     code.push('\0');
     print!(

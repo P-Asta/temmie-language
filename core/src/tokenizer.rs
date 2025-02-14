@@ -195,9 +195,9 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 }
             }
             let code_str: String = code[start..i].iter().collect();
-            if code_str == "true" {
+            if code_str == "tru" {
                 tokens.push(Token::Boolean(true));
-            } else if code_str == "false" {
+            } else if code_str == "falz" {
                 tokens.push(Token::Boolean(false));
             } else {
                 i = start;
@@ -219,7 +219,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 }
             }
             let code_str: String = code[start..i].iter().collect();
-            if code_str == "return" {
+            if code_str == "retun" {
                 let start = i + 1;
                 'sub: loop {
                     i += 1;
@@ -235,7 +235,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 return_code.push('\0');
                 let return_token = tokenizer(path.clone(), return_code);
                 tokens.push(Token::Return(return_token));
-            } else if code_str == "repeat" {
+            } else if code_str == "repet" {
                 let start = i + 1;
                 'sub: loop {
                     i += 1;
@@ -256,7 +256,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                         if i <= &0 {
                             log.error(
                                 (reading_y, start - 1),
-                                format!("Invalid repeat count: must be greater than 0, got {i}"),
+                                format!("Invalid repet count: must be greater than 0, got {i}"),
                             );
                         }
                         tokens.push(Token::Repeat(Box::new(Token::Integer(*i))));
@@ -267,7 +267,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                     _ => {
                         log.error(
                             (reading_y, start - 1),
-                            "Invalid repeat expression: must be an integer or identifier"
+                            "Invalid repet expression: must be an integer or identifier"
                                 .to_string(),
                         );
                     }
