@@ -8,6 +8,7 @@ pub enum Symbol {
     Multiply,
     Divide,
     Comma,
+    Semicolon,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -23,6 +24,8 @@ pub enum Token {
     Array(Vec<Vec<Token>>),
     Repeat(Box<Token>),
     Return(Vec<Token>),
+    Include(String),
+    If(Vec<Token>),
 }
 
 #[derive(Debug, Clone, PartialEq)]

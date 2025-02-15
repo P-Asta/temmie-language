@@ -1,4 +1,5 @@
 use crate::log;
+use crate::token;
 use crate::token::*;
 
 fn remove_comma(
@@ -44,6 +45,11 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
         }
         if c == ' ' {
             i += 1;
+            continue;
+        }
+        if c == ';' {
+            i += 1;
+            tokens.push(Token::Symbol(Symbol::Semicolon));
             continue;
         }
         if c == '\n' {

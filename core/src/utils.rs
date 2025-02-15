@@ -2,40 +2,26 @@ use std::collections::HashMap;
 
 use crate::token::Token;
 pub struct Function {
-    functions: Vec<Token>,
+    functions: HashMap<Token, Token>,
 }
 
 impl Function {
     pub fn new() -> Function {
         Function {
-            functions: Vec::new(),
+            functions: HashMap::new(),
         }
     }
 
-    pub fn add(&mut self, function: Token) {
-        self.functions.push(function);
+    pub fn add(&mut self, function: Token, code: Token) {
+        self.functions.insert(function, code);
     }
 
-    pub fn get(&self, function: Token) -> bool {
-        if let Token::Function(name, args) = function {
-            for f in &self.functions {
-                if let Token::Function(n, a) = f {
-                    return true;
-                }
-            }
-        }
-        false
+    pub fn get(&self, function: Token) -> Option<&Token> {
+        self.functions.get(&function)
     }
 
     pub fn can_use(&self, function: Token) -> bool {
-        if let Token::Function(name, args) = function {
-            for f in &self.functions {
-                if let Token::Function(n, a) = f {
-                    return a.len() == args.len();
-                }
-            }
-        }
-        false
+        self.functions.get(&function).is_some()
     }
 }
 

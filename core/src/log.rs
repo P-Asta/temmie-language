@@ -1,5 +1,3 @@
-use std::panic::panic_any;
-
 use colorfully::*;
 
 pub struct Logging {
