@@ -1,5 +1,8 @@
-# Temmie Lang
+<div align="center">
 
+# ![temmieeee](https://f.asta.rs/image/logo/tem.png)
+
+</div>
 undertal tehre TEMMIE SPEEK!! dis LANG temmie-mad!! WOW!!! 🎉🐱✨
 
 ## exampul!!
