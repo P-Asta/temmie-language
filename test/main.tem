@@ -1,4 +1,3 @@
-repet 10 {
-    prnt(1, 1 + 1);
-    prnt("L")
-}
+prnt("a")
+prnt("b")
+prnt(111)

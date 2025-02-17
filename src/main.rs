@@ -1,4 +1,5 @@
 use clap::Parser;
+use core::parser;
 use core::tokenizer;
 
 #[derive(Debug, Parser)]
@@ -15,8 +16,6 @@ fn main() {
     let path = "test/main.tem";
     let mut code = std::fs::read_to_string(&path).unwrap();
     code.push('\0');
-    print!(
-        "{:#?}",
-        tokenizer::tokenizer(path.to_string(), code.chars().collect())
-    );
+    let tokens = tokenizer::tokenizer(path.to_string(), code.chars().collect());
+    parser::parse(tokens);
 }

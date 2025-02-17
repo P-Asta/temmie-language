@@ -1,5 +1,4 @@
 use crate::log;
-use crate::token;
 use crate::token::*;
 
 fn remove_comma(
