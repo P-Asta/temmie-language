@@ -21,11 +21,11 @@ prnt("H0I W0RLD!!")
 - [ ] T0KENIZING If
 - [ ] T0KENIZING Includ
 
-- [ ] Ex3c ALl typ3
-- [ ] Ex3c Prnt
-- [ ] Ex3c Repet
-- [ ] Ex3c Bl0CK
-- [ ] Ex3c If
-- [ ] Ex3c Includ
+- [ ] Ev@l ALl typ3
+- [ ] Ev@l Prnt
+- [ ] Ev@l Repet
+- [ ] Ev@l Bl0CK
+- [ ] Ev@l If
+- [ ] Ev@l Includ
 
 - [ ] P@ck@ge M@n@g3r
