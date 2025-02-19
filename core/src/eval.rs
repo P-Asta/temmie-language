@@ -1,6 +1,6 @@
 use crate::token::Token;
 
-pub fn parse(tokens: Vec<Token>) -> Token {
+pub fn eval(tokens: Vec<Token>) -> Token {
     let mut i = 0;
     loop {
         if i >= tokens.len() {
@@ -27,7 +27,7 @@ pub fn parse(tokens: Vec<Token>) -> Token {
             Token::Function(name, args) => {
                 for arg in args {
                     if name == "prnt" {
-                        println!("{:?}", parse(arg.to_owned()));
+                        println!("{:?}", eval(arg.to_owned()));
                     }
                 }
             }
