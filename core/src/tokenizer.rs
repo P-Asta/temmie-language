@@ -189,7 +189,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     break 'sub;
                 }
-                if c.is_alphabetic() || c == '_' {
+                if c.is_string() {
                     continue 'sub;
                 } else {
                     break 'sub;
@@ -213,7 +213,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     break 'sub;
                 }
-                if c.is_alphabetic() {
+                if c.is_string() {
                     continue 'sub;
                 } else {
                     break 'sub;
@@ -280,7 +280,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             }
         }
 
-        if c.is_alphabetic() {
+        if c.is_string() {
             let start = i;
             let mut arg_start = 0;
             let id_str: String;
@@ -291,7 +291,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     id_str = code[start..i].iter().collect();
                     break 'sub;
-                } else if c.is_alphabetic() {
+                } else if c.is_string() {
                     continue 'sub;
                 } else if c == '(' {
                     id_str = code[start..i].iter().collect();
@@ -363,4 +363,14 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
         }
     }
     tokens
+}
+
+trait IsString {
+    fn is_string(&self) -> bool;
+}
+
+impl IsString for char {
+    fn is_string(&self) -> bool {
+        self.is_alphabetic() || self == &'_' || self == &'@' || self == &'!'
+    }
 }

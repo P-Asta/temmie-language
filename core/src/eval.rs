@@ -1,6 +1,12 @@
+use std::collections::HashMap;
+
 use crate::token::Token;
 
-pub fn eval(tokens: Vec<Token>) -> Token {
+pub fn eval(
+    tokens: Vec<Token>,
+    variables: HashMap<String, Token>,
+    args: Option<Vec<Token>>,
+) -> Token {
     let mut i = 0;
     loop {
         if i >= tokens.len() {
@@ -27,7 +33,7 @@ pub fn eval(tokens: Vec<Token>) -> Token {
             Token::Function(name, args) => {
                 for arg in args {
                     if name == "prnt" {
-                        println!("{:?}", eval(arg.to_owned()));
+                        println!("{:?}", eval(arg.to_owned(), variables.clone(), None));
                     }
                 }
             }

@@ -1,5 +1,5 @@
 use clap::Parser;
-use core::parser;
+use core::eval;
 use core::tokenizer;
 
 #[derive(Debug, Parser)]
@@ -17,5 +17,5 @@ fn main() {
     let mut code = std::fs::read_to_string(&path).unwrap();
     code.push('\0');
     let tokens = tokenizer::tokenizer(path.to_string(), code.chars().collect());
-    parser::parse(tokens);
+    eval::eval(tokens, std::collections::HashMap::new(), None);
 }
