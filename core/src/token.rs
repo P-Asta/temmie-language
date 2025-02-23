@@ -1,5 +1,7 @@
 use std::hash::Hash;
 
+use crate::class::Class;
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Symbol {
     Equal,
@@ -26,6 +28,52 @@ pub enum Token {
     Return(Vec<Token>),
     Include(String),
     If(Vec<Token>),
+}
+
+impl Token {
+    fn change2class(&self) -> Class {
+        if let Token::Integer(i) = self {
+            let mut class = Class::new(
+                "Integer".to_string(),
+                Default::default(),
+                Default::default(),
+            );
+            class.add_method("!!format!!".to_string(), Token::String(i.to_string()));
+            class.add_method(
+                "!!add!!".to_string(),
+                Token::Block(vec![
+                    Token::Identifier("x".to_string()),
+                    Token::Symbol(Symbol::Plus),
+                    Token::Identifier("rhs".to_string()),
+                ]),
+            );
+            class.add_method(
+                "!!sub!!".to_string(),
+                Token::Block(vec![
+                    Token::Identifier("x".to_string()),
+                    Token::Symbol(Symbol::Minus),
+                    Token::Identifier("rhs".to_string()),
+                ]),
+            );
+            class.add_method(
+                "!!mul!!".to_string(),
+                Token::Block(vec![
+                    Token::Identifier("x".to_string()),
+                    Token::Symbol(Symbol::Multiply),
+                    Token::Identifier("rhs".to_string()),
+                ]),
+            );
+            class.add_method(
+                "!!div!!".to_string(),
+                Token::Block(vec![
+                    Token::Identifier("x".to_string()),
+                    Token::Symbol(Symbol::Divide),
+                    Token::Identifier("rhs".to_string()),
+                ]),
+            );
+        }
+        Class::new("".to_string(), Default::default(), Default::default())
+    }
 }
 
 impl std::fmt::Display for Token {
