@@ -21,10 +21,16 @@ impl Class {
         }
     }
 
+    pub fn add_field(&mut self, name: String, value: Token) {
+        self.fields.insert(name, value);
+    }
     pub fn get_field(&self, name: String) -> Option<&Token> {
         self.fields.get(&name)
     }
-    pub fn run_function(&self, name: String, args: Vec<Token>) -> Token {
+    pub fn add_method(&mut self, name: String, function: Token) {
+        self.methods.insert(name, function);
+    }
+    pub fn run_method(&self, name: String, args: Vec<Token>) -> Token {
         let function = self.methods.get(&name).unwrap();
         eval(vec![function.to_owned()], self.fields.clone(), Some(args))
     }
@@ -35,7 +41,7 @@ impl std::fmt::Display for Class {
         write!(
             f,
             "class {}",
-            self.run_function("!!format!!".to_string(), Vec::new())
+            self.run_method("!!format!!".to_string(), Vec::new())
         )
     }
 }
