@@ -175,7 +175,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     break 'sub;
                 }
-                if c.is_alphabetic() {
+                if c.is_alphabetic() || c == '_' {
                     continue 'sub;
                 } else {
                     break 'sub;
