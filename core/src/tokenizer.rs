@@ -78,7 +78,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 continue 'main;
             }
             if dot_cnt == 1 {
-                tokens.push(Token::Float(num_str.parse().unwrap()));
+                tokens.push(Token::Float(FakeFloat(num_str.parse().unwrap())));
                 continue 'main;
             } else {
                 log.error(

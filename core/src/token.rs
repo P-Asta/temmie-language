@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq, Eq, Clone)]
+use std::hash::Hash;
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Symbol {
     Equal,
     Plus,
@@ -8,10 +10,10 @@ pub enum Symbol {
     Comma,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Token {
     Integer(isize),
-    Float(f64),
+    Float(FakeFloat),
     String(String),
     Function(String, Vec<Vec<Token>>),
     Boolean(bool),
@@ -21,4 +23,15 @@ pub enum Token {
     Array(Vec<Vec<Token>>),
     Repeat(Box<Token>),
     Return(Vec<Token>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FakeFloat(pub f64);
+
+impl Eq for FakeFloat {}
+
+impl Hash for FakeFloat {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        state.write_u64(self.0.to_bits());
+    }
 }
