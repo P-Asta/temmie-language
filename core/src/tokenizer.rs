@@ -17,7 +17,7 @@ fn remove_comma(
             if arg.len() == 0 {
                 log.error(
                     (reading_y, arg_start - start + remove_comma_count),
-                    "Invalid comma: unexpected comma".to_string(),
+                    "INVAL!D C0MMA: UNEXPEKTED C0MMA!! H0W DID DIS HAPPEN??".to_string(),
                 );
             }
             result_args.push(arg);
@@ -89,7 +89,9 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             } else {
                 log.error(
                     (reading_y, reading_x),
-                    format!("Invalid number format: '{num_str}' contains multiple decimal points"),
+                    format!(
+                        "INVAL!D NUMBR FORM@T: '{num_str}' H@S MULTIPLE DECIM@L P0INTS!! WHAT??"
+                    ),
                 );
             }
         }
@@ -101,7 +103,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     log.error(
                         (reading_y, reading_x),
-                        "Unterminated string literal: missing closing quote".to_string(),
+                        "UNT3RM!N@TED STR!NG L!TER@L: M!SS!NG CLOS!NG QU0TE!! OH NOO!!".to_string(),
                     );
                 }
                 if c == '"' {
@@ -123,7 +125,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     log.error(
                         (reading_y, reading_x),
-                        "Unterminated block: missing closing brace '}'".to_string(),
+                        "UNT3RM!N@TED BL0CK: M!SS!NG CLOS!NG BR@C3 '}'!! OOPSIE!!".to_string(),
                     );
                 }
                 if c == '{' {
@@ -153,7 +155,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     log.error(
                         (reading_y, reading_x),
-                        "Unterminated array: missing closing bracket ']'".to_string(),
+                        "UNT3RM!N@TED @RR@Y: M!SS!NG CLOS!NG BR@CKET ']'!! NOO!!".to_string(),
                     );
                 }
                 if c == '[' {
@@ -256,7 +258,9 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                         if i <= &0 {
                             log.error(
                                 (reading_y, start - 1),
-                                format!("Invalid repet count: must be greater than 0, got {i}"),
+                                format!(
+                                    "INVAL!D REP3T C0UNT: MUST BE GR@TER THAN 0, G0T -1!! W@HAT??"
+                                ),
                             );
                         }
                         tokens.push(Token::Repeat(Box::new(Token::Integer(*i))));
@@ -267,7 +271,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                     _ => {
                         log.error(
                             (reading_y, start - 1),
-                            "Invalid repet expression: must be an integer or identifier"
+                            "INVAL!D REP3T EXPRESSION: MUST BE @N !NT3G3R OR !D3NT!F!3R!!"
                                 .to_string(),
                         );
                     }
@@ -299,7 +303,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                         if c == '\0' {
                             log.error(
                                 (reading_y, arg_start - start),
-                                "Invalid function call: missing closing parenthesis ')'"
+                                "INVAL!D FUNCT!ON C@LL: M!SS!NG CLOS!NG P@RENTHESES ')'!! OH NO!!"
                                     .to_string(),
                             );
                         } else if c == ')' {
