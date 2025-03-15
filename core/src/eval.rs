@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io::Write};
 
-use crate::token::Token;
+use crate::{calc::calc, token::Token};
 
 pub fn eval(
     tokens: Vec<Token>,
@@ -33,7 +33,13 @@ pub fn eval(
             Token::Function(name, args) => {
                 for arg in args {
                     if name == "prnt" {
-                        println!("{:?}", eval(arg.to_owned(), variables.clone(), None));
+                        let calc_value = calc(arg.to_owned());
+                        if let Token::None = calc_value {
+                            print!("{:?}", eval(arg.to_owned(), variables.clone(), None));
+                        } else {
+                            print!("{:?}", calc_value);
+                        }
+                        std::io::stdout().flush().unwrap();
                     }
                 }
             }

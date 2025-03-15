@@ -1,3 +1,4 @@
+pub mod calc;
 pub mod class;
 pub mod eval;
 pub mod log;

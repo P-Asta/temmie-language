@@ -1,4 +1,6 @@
+use crate::calc::calc;
 use crate::log;
+use crate::token;
 use crate::token::*;
 
 fn remove_comma(
@@ -189,7 +191,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     break 'sub;
                 }
-                if c.is_string() {
+                if c.is_alphabetic() || c == '_' {
                     continue 'sub;
                 } else {
                     break 'sub;
@@ -213,7 +215,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     break 'sub;
                 }
-                if c.is_string() {
+                if c.is_alphabetic() {
                     continue 'sub;
                 } else {
                     break 'sub;
@@ -280,7 +282,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             }
         }
 
-        if c.is_string() {
+        if c.is_alphabetic() {
             let start = i;
             let mut arg_start = 0;
             let id_str: String;
@@ -291,7 +293,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 if c == '\0' {
                     id_str = code[start..i].iter().collect();
                     break 'sub;
-                } else if c.is_string() {
+                } else if c.is_alphabetic() {
                     continue 'sub;
                 } else if c == '(' {
                     id_str = code[start..i].iter().collect();
@@ -362,15 +364,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             _ => {}
         }
     }
+    println!("{:?}", tokens);
+    // println!("{:?}", calc(tokens.clone()));
     tokens
-}
-
-trait IsString {
-    fn is_string(&self) -> bool;
-}
-
-impl IsString for char {
-    fn is_string(&self) -> bool {
-        self.is_alphabetic() || self == &'_' || self == &'@' || self == &'!'
-    }
 }

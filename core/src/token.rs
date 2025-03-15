@@ -1,4 +1,4 @@
-use std::hash::Hash;
+use std::{collections::HashMap, hash::Hash};
 
 use crate::class::Class;
 
@@ -28,6 +28,7 @@ pub enum Token {
     Return(Vec<Token>),
     Include(String),
     If(Vec<Token>),
+    None,
 }
 
 impl Token {
