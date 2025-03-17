@@ -25,9 +25,10 @@ prnt("H0I W0RLD!!")
 - [ ] T0KENIZING P!pe L!ne
 
 - [ ] Ev@l ALl typ3
+- [x] Ev@l C@lculate
 - [ ] Ev@l Prnt
 - [ ] Ev@l Repet
-- [ ] Ev@l Bl0CK
+- [x] Ev@l Bl0CK
 - [ ] Ev@l If
 - [ ] Ev@l Includ
 - [ ] Ev@l Cl@ss
