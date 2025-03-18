@@ -1,6 +1,4 @@
-use crate::calc::calc;
 use crate::log;
-use crate::token;
 use crate::token::*;
 
 fn remove_comma(
@@ -364,7 +362,5 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             _ => {}
         }
     }
-    println!("{:?}", tokens);
-    // println!("{:?}", calc(tokens.clone()));
     tokens
 }

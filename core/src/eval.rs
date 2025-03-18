@@ -5,11 +5,7 @@ use crate::{
     token::Token,
 };
 
-pub fn eval(
-    tokens: Vec<Token>,
-    variables: HashMap<String, Token>,
-    args: Option<Vec<Token>>,
-) -> Token {
+pub fn eval(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
     let mut i = 0;
     loop {
         if i >= tokens.len() {
@@ -43,7 +39,7 @@ pub fn eval(
                     if name == "prnt" {
                         let calc_value = calc(arg.to_owned());
                         if let Token::None = calc_value {
-                            print!("{:?}", eval(arg.to_owned(), variables.clone(), None));
+                            print!("{:?}", eval(arg.to_owned(), variables.clone()));
                         } else {
                             print!("{:?}", calc_value);
                         }
@@ -54,7 +50,7 @@ pub fn eval(
             Token::Block(tokens) => {
                 let calc_value = calc_fi(tokens.to_owned(), variables.clone());
                 if let Token::None = calc_value {
-                    return eval(tokens.to_owned(), variables.clone(), None);
+                    return eval(tokens.to_owned(), variables.clone());
                 } else {
                     return calc_value;
                 }

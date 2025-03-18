@@ -17,5 +17,5 @@ fn main() {
     let mut code = std::fs::read_to_string(&path).unwrap();
     code.push('\0');
     let tokens = tokenizer::tokenizer(path.to_string(), code.chars().collect());
-    eval::eval(tokens, std::collections::HashMap::new(), None);
+    eval::eval(tokens, std::collections::HashMap::new());
 }

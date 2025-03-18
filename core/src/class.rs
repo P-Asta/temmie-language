@@ -31,11 +31,10 @@ impl Class {
         self.methods.insert(name, function);
     }
     pub fn run_method(&self, name: String, args: HashMap<String, Token>) -> Token {
-        println!("run_method: {}", name);
         let function = self.methods.get(&name).unwrap();
         let mut merge_fields = self.fields.clone();
         merge_fields.extend(args);
-        eval(vec![function.to_owned()], merge_fields, None)
+        eval(vec![function.to_owned()], merge_fields)
     }
 }
 
