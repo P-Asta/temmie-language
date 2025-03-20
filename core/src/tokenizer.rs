@@ -37,6 +37,9 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
     let mut tokens = Vec::new();
     let log = log::Logging::new(path.clone());
     'main: loop {
+        if i >= code.len() {
+            break 'main;
+        }
         let c = code[i];
         reading_x += 1;
         if c == '\0' {
@@ -342,6 +345,17 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             '=' => {
                 tokens.push(Token::Symbol(Symbol::Equal));
                 i += 1;
+                let start = i;
+                'sub: loop {
+                    let c = code[i];
+                    if c == ';' {
+                        break 'sub;
+                    }
+                    i += 1;
+                }
+                let mut code = code[start..i].to_vec();
+                code.push('\0');
+                tokens.push(Token::Block(tokenizer(path.clone(), code)));
             }
             '+' => {
                 tokens.push(Token::Symbol(Symbol::Plus));

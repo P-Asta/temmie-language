@@ -144,7 +144,22 @@ impl Token {
 
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string())
+        if let Token::String(s) = self {
+            return write!(f, "{}", s);
+        }
+        if let Token::Integer(i) = self {
+            return write!(f, "{}", i);
+        }
+        if let Token::Float(ff) = self {
+            return write!(f, "{}", ff);
+        }
+        if let Token::Boolean(b) = self {
+            return write!(f, "{}", b);
+        }
+        if let Token::Identifier(i) = self {
+            return write!(f, "{}", i);
+        }
+        write!(f, "{:?}", self)
     }
 }
 
