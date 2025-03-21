@@ -126,6 +126,14 @@ impl Token {
                         Token::Identifier("rhs".to_string()),
                     ]),
                 );
+                class.add_method(
+                    "!!mul!!".to_string(),
+                    Token::Block(vec![
+                        Token::String(s.to_owned()),
+                        Token::Symbol(Symbol::Multiply),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
                 class
             }
             Token::Boolean(b) => {

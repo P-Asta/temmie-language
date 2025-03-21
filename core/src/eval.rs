@@ -1,7 +1,7 @@
 use std::{collections::HashMap, io::Write};
 
 use crate::{
-    calc::{calc, calc_fi},
+    calc::{calc, calc_fi, calc_str},
     token::{Symbol, Token},
 };
 
@@ -58,7 +58,6 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                         }
                         println!("{:?} -> {:?}", arg, changed_arg);
                         let calc_value = calc(changed_arg.to_owned());
-                        println!("{:?}", calc_value);
                         if let Token::None = calc_value {
                             print!("{:?}", eval(changed_arg.to_owned(), variables.clone()));
                         } else {
@@ -70,11 +69,20 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                 i += 1;
             }
             Token::Block(tokens) => {
-                let calc_value = calc_fi(tokens.to_owned(), variables.clone());
-                if let Token::None = calc_value {
-                    return eval(tokens.to_owned(), variables.clone());
+                if let Token::String(_) = tokens[0] {
+                    let calc_value = calc_str(tokens.to_owned(), variables.clone());
+                    if let Token::None = calc_value {
+                        return eval(tokens.to_owned(), variables.clone());
+                    } else {
+                        return calc_value;
+                    }
                 } else {
-                    return calc_value;
+                    let calc_value = calc_fi(tokens.to_owned(), variables.clone());
+                    if let Token::None = calc_value {
+                        return eval(tokens.to_owned(), variables.clone());
+                    } else {
+                        return calc_value;
+                    }
                 }
             }
             _ => {

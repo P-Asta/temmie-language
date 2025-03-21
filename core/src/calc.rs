@@ -87,6 +87,46 @@ pub fn calc(tokens: Vec<Token>) -> Token {
     }
 }
 
+pub fn calc_str(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
+    // 토큰 유효성 검사 및 변수 치환
+    let tokens: Vec<Token> = tokens
+        .into_iter()
+        .map(|token| match &token {
+            Token::Identifier(name) => variables.get(name).cloned().unwrap_or(token),
+            _ => token,
+        })
+        .collect();
+
+    // 한개만있으면 반환
+    if tokens.len() == 1 {
+        return match &tokens[0] {
+            Token::String(s) => Token::String(s.clone()),
+            _ => Token::None,
+        };
+    }
+
+    if tokens.len() == 3 {
+        match (&tokens[0], &tokens[1], &tokens[2]) {
+            // 문자열 곱셈 처리하는거
+            (Token::String(s), Token::Symbol(Symbol::Multiply), Token::Integer(n)) => {
+                if *n >= 0 {
+                    return Token::String(s.repeat(*n as usize));
+                }
+                return Token::String(String::new());
+            }
+            // 문자열 덧셈 처리하는거
+            (Token::String(s1), Token::Symbol(Symbol::Plus), Token::String(s2)) => {
+                let mut result = s1.clone();
+                result.push_str(s2);
+                return Token::String(result);
+            }
+            _ => {}
+        }
+    }
+
+    Token::None
+}
+
 pub fn calc_fi(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
     let mut current_term = Vec::new();
     let mut terms = Vec::new();
