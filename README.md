@@ -18,6 +18,7 @@ prnt("H0I W0RLD!!")
 - [x] T0KENIZING Symb0L
 - [x] T0KENIZING Repet
 - [x] T0KENIZING Retun
+- [x] T0KENIZING Bl0ck
 - [ ] T0KENIZING If
 - [ ] T0KENIZING Includ
 - [ ] T0KENIZING Cl@ss
@@ -25,10 +26,12 @@ prnt("H0I W0RLD!!")
 - [ ] T0KENIZING P!pe L!ne
 
 - [ ] Ev@l ALl typ3
-- [x] Ev@l C@lculate
-- [ ] Ev@l Prnt
+- [x] Ev@l Numb3r C@lculate
+- [x] Ev@l Flo@t! C@lculate
+- [x] Ev@l Strinnng C@lculate
+- [x] Ev@l Prnt
 - [ ] Ev@l Repet
-- [x] Ev@l Bl0CK
+- [x] Ev@l Bl0ck
 - [ ] Ev@l If
 - [ ] Ev@l Includ
 - [ ] Ev@l Cl@ss
