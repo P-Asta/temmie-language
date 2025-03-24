@@ -1,6 +1,9 @@
 use std::{collections::HashMap, io::Write};
 
-use crate::{calc::calc, token::Token};
+use crate::{
+    calc::{calc, calc_fi},
+    token::Token,
+};
 
 pub fn eval(
     tokens: Vec<Token>,
@@ -12,8 +15,13 @@ pub fn eval(
         if i >= tokens.len() {
             return Token::Integer(0);
         }
-        let token = &tokens[i];
+        let mut token = &tokens[i];
         i += 1;
+        if let Token::Identifier(name) = token {
+            if let Some(value) = variables.get(name) {
+                token = value;
+            }
+        }
         match token {
             Token::Integer(i) => {
                 return Token::Integer(*i);
@@ -41,6 +49,14 @@ pub fn eval(
                         }
                         std::io::stdout().flush().unwrap();
                     }
+                }
+            }
+            Token::Block(tokens) => {
+                let calc_value = calc_fi(tokens.to_owned(), variables.clone());
+                if let Token::None = calc_value {
+                    return eval(tokens.to_owned(), variables.clone(), None);
+                } else {
+                    return calc_value;
                 }
             }
             _ => {}

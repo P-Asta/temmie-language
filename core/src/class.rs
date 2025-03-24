@@ -30,9 +30,12 @@ impl Class {
     pub fn add_method(&mut self, name: String, function: Token) {
         self.methods.insert(name, function);
     }
-    pub fn run_method(&self, name: String, args: Vec<Token>) -> Token {
+    pub fn run_method(&self, name: String, args: HashMap<String, Token>) -> Token {
+        println!("run_method: {}", name);
         let function = self.methods.get(&name).unwrap();
-        eval(vec![function.to_owned()], self.fields.clone(), Some(args))
+        let mut merge_fields = self.fields.clone();
+        merge_fields.extend(args);
+        eval(vec![function.to_owned()], merge_fields, None)
     }
 }
 
@@ -41,7 +44,7 @@ impl std::fmt::Display for Class {
         write!(
             f,
             "class {}",
-            self.run_method("!!format!!".to_string(), Vec::new())
+            self.run_method("!!format!!".to_string(), HashMap::new())
         )
     }
 }

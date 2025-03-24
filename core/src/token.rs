@@ -28,52 +28,117 @@ pub enum Token {
     Return(Vec<Token>),
     Include(String),
     If(Vec<Token>),
+
     None,
 }
 
 impl Token {
-    fn change2class(&self) -> Class {
-        if let Token::Integer(i) = self {
-            let mut class = Class::new(
-                "Integer".to_string(),
-                Default::default(),
-                Default::default(),
-            );
-            class.add_method("!!format!!".to_string(), Token::String(i.to_string()));
-            class.add_method(
-                "!!add!!".to_string(),
-                Token::Block(vec![
-                    Token::Identifier("x".to_string()),
-                    Token::Symbol(Symbol::Plus),
-                    Token::Identifier("rhs".to_string()),
-                ]),
-            );
-            class.add_method(
-                "!!sub!!".to_string(),
-                Token::Block(vec![
-                    Token::Identifier("x".to_string()),
-                    Token::Symbol(Symbol::Minus),
-                    Token::Identifier("rhs".to_string()),
-                ]),
-            );
-            class.add_method(
-                "!!mul!!".to_string(),
-                Token::Block(vec![
-                    Token::Identifier("x".to_string()),
-                    Token::Symbol(Symbol::Multiply),
-                    Token::Identifier("rhs".to_string()),
-                ]),
-            );
-            class.add_method(
-                "!!div!!".to_string(),
-                Token::Block(vec![
-                    Token::Identifier("x".to_string()),
-                    Token::Symbol(Symbol::Divide),
-                    Token::Identifier("rhs".to_string()),
-                ]),
-            );
+    pub fn change2class(&self) -> Class {
+        match self {
+            Token::Integer(i) => {
+                let mut class = Class::new(
+                    "Integer".to_string(),
+                    Default::default(),
+                    Default::default(),
+                );
+                class.add_method("!!format!!".to_string(), Token::String(i.to_string()));
+                class.add_method(
+                    "!!add!!".to_string(),
+                    Token::Block(vec![
+                        Token::Integer(i.to_owned()),
+                        Token::Symbol(Symbol::Plus),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class.add_method(
+                    "!!sub!!".to_string(),
+                    Token::Block(vec![
+                        Token::Integer(i.to_owned()),
+                        Token::Symbol(Symbol::Minus),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class.add_method(
+                    "!!mul!!".to_string(),
+                    Token::Block(vec![
+                        Token::Integer(i.to_owned()),
+                        Token::Symbol(Symbol::Multiply),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class.add_method(
+                    "!!div!!".to_string(),
+                    Token::Block(vec![
+                        Token::Integer(i.to_owned()),
+                        Token::Symbol(Symbol::Divide),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class
+            }
+            Token::Float(f) => {
+                let mut class =
+                    Class::new("Float".to_string(), Default::default(), Default::default());
+                class.add_method("!!format!!".to_string(), Token::String(f.to_string()));
+                class.add_method(
+                    "!!add!!".to_string(),
+                    Token::Block(vec![
+                        Token::Float(f.to_owned()),
+                        Token::Symbol(Symbol::Plus),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class.add_method(
+                    "!!sub!!".to_string(),
+                    Token::Block(vec![
+                        Token::Float(f.to_owned()),
+                        Token::Symbol(Symbol::Minus),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class.add_method(
+                    "!!mul!!".to_string(),
+                    Token::Block(vec![
+                        Token::Float(f.to_owned()),
+                        Token::Symbol(Symbol::Multiply),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class.add_method(
+                    "!!div!!".to_string(),
+                    Token::Block(vec![
+                        Token::Float(f.to_owned()),
+                        Token::Symbol(Symbol::Divide),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class
+            }
+            Token::String(s) => {
+                let mut class =
+                    Class::new("String".to_string(), Default::default(), Default::default());
+                class.add_method("!!format!!".to_string(), Token::String(s.to_string()));
+                class.add_method(
+                    "!!add!!".to_string(),
+                    Token::Block(vec![
+                        Token::String(s.to_owned()),
+                        Token::Symbol(Symbol::Plus),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
+                class
+            }
+            Token::Boolean(b) => {
+                let mut class = Class::new(
+                    "Boolean".to_string(),
+                    Default::default(),
+                    Default::default(),
+                );
+                class.add_method("!!format!!".to_string(), Token::String(b.to_string()));
+                class
+            }
+            _ => Class::new("".to_string(), Default::default(), Default::default()),
         }
-        Class::new("".to_string(), Default::default(), Default::default())
     }
 }
 
