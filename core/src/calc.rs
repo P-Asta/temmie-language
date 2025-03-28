@@ -36,7 +36,7 @@ pub fn calc(tokens: Vec<Token>) -> Token {
                         _ => unreachable!(),
                     };
                 }
-                Symbol::Plus | Symbol::Minus => {
+                Symbol::Plus | Symbol::Minus | Symbol::Is => {
                     result_tokens.push(current);
                     result_tokens.push(Token::Symbol(op.clone()));
                     current = tokens[i].clone();
@@ -49,6 +49,7 @@ pub fn calc(tokens: Vec<Token>) -> Token {
     result_tokens.push(current);
 
     // 그 다음 덧셈/뺄셈 처리
+    let mut result_tokens_is = Vec::new();
     let mut current = result_tokens[0].change2class();
     let mut i = 1;
 
@@ -60,20 +61,45 @@ pub fn calc(tokens: Vec<Token>) -> Token {
             }
             let next_token = result_tokens[i].clone();
 
-            let mut hash = HashMap::new();
-            hash.insert("rhs".to_string(), next_token);
+            match op {
+                Symbol::Plus | Symbol::Minus => {
+                    let mut hash = HashMap::new();
+                    hash.insert("rhs".to_string(), next_token);
 
-            let result = match op {
-                Symbol::Plus => current.run_method("!!add!!".to_string(), hash),
-                Symbol::Minus => current.run_method("!!sub!!".to_string(), hash),
-                _ => Token::None,
-            };
-            current = result.change2class();
+                    let result = match op {
+                        Symbol::Plus => current.run_method("!!add!!".to_string(), hash),
+                        Symbol::Minus => current.run_method("!!sub!!".to_string(), hash),
+                        _ => Token::None,
+                    };
+                    current = result.change2class();
+                }
+                Symbol::Is => {
+                    result_tokens_is
+                        .push(current.run_method("!!format!!".to_string(), HashMap::new()));
+                    result_tokens_is.push(Token::Symbol(Symbol::Is));
+                    current = next_token.change2class();
+                }
+                _ => {}
+            }
         }
         i += 1;
     }
 
-    match current.run_method("!!format!!".to_string(), HashMap::new()) {
+    let formatted = current.run_method("!!format!!".to_string(), HashMap::new());
+
+    // is 연산 처리
+    if !result_tokens_is.is_empty() {
+        result_tokens_is.push(formatted);
+        if result_tokens_is.len() == 3 {
+            if let Token::Symbol(Symbol::Is) = result_tokens_is[1] {
+                return Token::Boolean(result_tokens_is[0] == result_tokens_is[2]);
+            }
+        }
+        return Token::None;
+    }
+
+    // 결과 타입 변환
+    match formatted {
         Token::String(s) => {
             if let Ok(i) = s.parse::<isize>() {
                 Token::Integer(i)

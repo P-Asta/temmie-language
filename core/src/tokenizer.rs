@@ -201,8 +201,74 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             let code_str: String = code[start..i].iter().collect();
             if code_str == "tru" {
                 tokens.push(Token::Boolean(true));
+                continue 'main;
             } else if code_str == "falz" {
                 tokens.push(Token::Boolean(false));
+                continue 'main;
+            } else {
+                i = start;
+            }
+        }
+        if c == 'i' {
+            let start = i;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    log.error((reading_y, reading_x), "TODO".to_string());
+                }
+                if c == '(' || c == ' ' {
+                    break 'sub;
+                }
+                if c.is_alphabetic() {
+                    continue 'sub;
+                } else {
+                    break 'sub;
+                }
+            }
+            let code_str: String = code[start..i].iter().collect();
+            let start = i;
+            if code_str == "is" {
+                tokens.push(Token::Symbol(Symbol::Is));
+                continue 'main;
+            }
+            if code_str == "if" {
+                'sub: loop {
+                    i += 1;
+                    let c = code[i];
+                    if c == '\0' {
+                        println!("null end");
+                        break 'sub;
+                    }
+                    if c == '{' {
+                        break 'sub;
+                    }
+                }
+                let condition_code: String = code[start..i].iter().collect();
+                println!("collected: {}", condition_code);
+
+                let condition_code = condition_code.trim().replace("(", "{").replace(")", "}");
+                let mut condition_code: Vec<char> = condition_code.chars().collect();
+                println!("condition_code: {:?}", condition_code);
+                i -= 1;
+                condition_code.push('\0');
+                let condition_token = tokenizer(path.clone(), condition_code);
+                let start = i + 1;
+                'sub: loop {
+                    i += 1;
+                    let c = code[i];
+                    if c == '\0' {
+                        break 'sub;
+                    }
+                    if c == '{' {
+                        break 'sub;
+                    }
+                }
+                let mut block_code = code[start..i].to_vec();
+                i -= 1;
+                block_code.push('\0');
+                let block_token = tokenizer(path.clone(), block_code);
+                tokens.push(Token::If(condition_token, block_token));
             } else {
                 i = start;
             }

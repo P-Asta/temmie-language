@@ -30,9 +30,6 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
             Token::Boolean(b) => {
                 return Token::Boolean(*b);
             }
-            // Token::Identifier(i) => {
-            //     return Token::Identifier(i.to_owned());
-            // }
             Token::Symbol(s) => {
                 if let Symbol::Equal = s {
                     let name = format!("{}", tokens[i - 1]);
@@ -67,6 +64,27 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                     }
                 }
                 i += 1;
+            }
+            Token::If(condition, _) => {
+                println!("var {:?}", variables);
+                // 조건 확인
+                let condition_result = eval(condition.to_owned(), variables.clone());
+                println!(
+                    "condition {:?} ->{:?}",
+                    condition.to_owned(),
+                    condition_result
+                );
+                // 다음 토큰이 블록인지 확인
+                i += 1;
+                if i < tokens.len() {
+                    if let Token::Block(block) = &tokens[i] {
+                        if let Token::Boolean(true) = condition_result {
+                            eval(block.to_owned(), variables.clone());
+                        }
+                    }
+                }
+                i += 1;
+                continue;
             }
             Token::Block(tokens) => {
                 if let Token::String(_) = tokens[0] {

@@ -1,4 +1,3 @@
-a = "a";
-b = "b";
-c = 3;
-prnt(a + b * c)
+a = 1;
+b = 2;
+prnt(a + b is 3)

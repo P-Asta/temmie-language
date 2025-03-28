@@ -5,6 +5,7 @@ use crate::class::Class;
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Symbol {
     Equal,
+    Is,
     Plus,
     Minus,
     Multiply,
@@ -27,7 +28,7 @@ pub enum Token {
     Repeat(Box<Token>),
     Return(Vec<Token>),
     Include(String),
-    If(Vec<Token>),
+    If(Vec<Token>, Vec<Token>),
 
     None,
 }
