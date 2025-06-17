@@ -3,9 +3,22 @@ use std::collections::HashMap;
 use crate::token::{FakeFloat, Symbol, Token};
 
 pub fn calc(tokens: Vec<Token>) -> Token {
+    calc_with_variables(tokens, HashMap::new())
+}
+
+pub fn calc_with_variables(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
     if tokens.is_empty() {
         return Token::None;
     }
+
+    // 변수 치환 먼저 처리
+    let tokens: Vec<Token> = tokens
+        .into_iter()
+        .map(|token| match &token {
+            Token::Identifier(name) => variables.get(name).cloned().unwrap_or(token),
+            _ => token,
+        })
+        .collect();
 
     // 먼저 곱셈/나눗셈 처리
     let mut result_tokens = Vec::new();
@@ -87,12 +100,15 @@ pub fn calc(tokens: Vec<Token>) -> Token {
 
     let formatted = current.run_method("!!format!!".to_string(), HashMap::new());
 
-    // is 연산 처리
+    // is 연산 처리 - 여기가 핵심!
     if !result_tokens_is.is_empty() {
         result_tokens_is.push(formatted);
         if result_tokens_is.len() == 3 {
             if let Token::Symbol(Symbol::Is) = result_tokens_is[1] {
-                return Token::Boolean(result_tokens_is[0] == result_tokens_is[2]);
+                // 두 값이 같은지 비교하여 Boolean 반환
+                let left = &result_tokens_is[0];
+                let right = &result_tokens_is[2];
+                return Token::Boolean(left == right);
             }
         }
         return Token::None;
@@ -158,8 +174,9 @@ pub fn calc_fi(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
     let mut terms = Vec::new();
     let mut operators = Vec::new();
     let mut has_float = false;
+    let mut has_is_operator = false;
 
-    // float으로 할지 확인하는거
+    // float으로 할지 확인하는거 + is 연산자 확인
     for token in &tokens {
         let mut token = token.clone();
         if let Token::Identifier(name) = &token {
@@ -169,7 +186,9 @@ pub fn calc_fi(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
         }
         if let Token::Float(_) = token {
             has_float = true;
-            break;
+        }
+        if let Token::Symbol(Symbol::Is) = token {
+            has_is_operator = true;
         }
         if !matches!(
             token,
@@ -177,6 +196,11 @@ pub fn calc_fi(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
         ) {
             return Token::None;
         }
+    }
+
+    // is 연산자가 있으면 calc_with_variables 함수로 처리
+    if has_is_operator {
+        return calc_with_variables(tokens, variables);
     }
 
     // 항으로 나누는거

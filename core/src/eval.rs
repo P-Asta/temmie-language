@@ -1,9 +1,9 @@
-use std::{collections::HashMap, io::Write};
-
+use crate::calc::calc_with_variables;
 use crate::{
     calc::{calc, calc_fi, calc_str},
     token::{Symbol, Token},
 };
+use std::{collections::HashMap, io::Write};
 
 pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token {
     let mut i = 0;
@@ -34,8 +34,12 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                 if let Symbol::Equal = s {
                     let name = format!("{}", tokens[i - 1]);
                     i += 1;
-                    let value = eval(vec![tokens[i].to_owned()], variables.clone());
-                    variables.insert(name, value.clone());
+                    if i < tokens.len() {
+                        // 등호 다음의 한 토큰만 처리 (대부분 Block)
+                        let value = eval(vec![tokens[i].clone()], variables.clone());
+                        variables.insert(name.clone(), value.clone());
+                        println!("Assigned {} = {:?}", name, value);
+                    }
                 }
             }
             Token::Function(name, args) => {
@@ -87,6 +91,11 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                 continue;
             }
             Token::Block(tokens) => {
+                println!("Processing Block: {:?}", tokens);
+                if tokens.is_empty() {
+                    return Token::Integer(0);
+                }
+
                 if let Token::String(_) = tokens[0] {
                     let calc_value = calc_str(tokens.to_owned(), variables.clone());
                     if let Token::None = calc_value {
@@ -95,9 +104,19 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                         return calc_value;
                     }
                 } else {
+                    // calc_fi 대신 calc_with_variables 사용
                     let calc_value = calc_fi(tokens.to_owned(), variables.clone());
+                    println!("calc_fi result: {:?}", calc_value);
                     if let Token::None = calc_value {
-                        return eval(tokens.to_owned(), variables.clone());
+                        // calc가 None을 반환하면 일반 calc_with_variables 시도
+                        let calc_with_vars =
+                            calc_with_variables(tokens.to_owned(), variables.clone());
+                        println!("calc_with_variables result: {:?}", calc_with_vars);
+                        if let Token::None = calc_with_vars {
+                            return eval(tokens.to_owned(), variables.clone());
+                        } else {
+                            return calc_with_vars;
+                        }
                     } else {
                         return calc_value;
                     }

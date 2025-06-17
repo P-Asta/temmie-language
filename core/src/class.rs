@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{eval::eval, token::Token};
-
+#[derive(Debug)]
 pub struct Class {
     pub name: String,
     pub fields: HashMap<String, Token>,

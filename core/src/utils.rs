@@ -5,6 +5,20 @@ pub struct Function {
     functions: HashMap<Token, Token>,
 }
 
+#[macro_export]
+#[macro_use]
+macro_rules! get_to_variables {
+    ($token: tt, $variables: tt) => {
+        if let Token::Identifier(name) = &$token {
+            // print!("{:?} to ", $token);
+            if let Some(value) = $variables.get(name) {
+                $token = value.to_owned();
+            }
+            // println!("{:?}", $token);
+        }
+    };
+}
+
 impl Function {
     pub fn new() -> Function {
         Function {
