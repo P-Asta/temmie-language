@@ -1,3 +1,3 @@
 a = 2 + 3;
-b = a + 3 is 5;
-prnt(b);
+a = a is 5;
+prnt(a);

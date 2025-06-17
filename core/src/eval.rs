@@ -7,9 +7,11 @@ use std::{collections::HashMap, io::Write};
 
 pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token {
     let mut i = 0;
+    let mut last_result = Token::Integer(0);
+
     loop {
         if i >= tokens.len() {
-            return Token::Integer(0);
+            return last_result;
         }
         let mut token = &tokens[i];
         if let Token::Identifier(name) = token {
@@ -18,17 +20,30 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
             }
         }
         match token {
-            Token::Integer(i) => {
-                return Token::Integer(*i);
+            Token::Integer(val) => {
+                last_result = Token::Integer(*val);
+                // 다음이 Symbol이 아니면 바로 반환
+                if i + 1 >= tokens.len() || !matches!(tokens[i + 1], Token::Symbol(_)) {
+                    return last_result;
+                }
             }
             Token::Float(f) => {
-                return Token::Float(f.to_owned());
+                last_result = Token::Float(f.to_owned());
+                if i + 1 >= tokens.len() || !matches!(tokens[i + 1], Token::Symbol(_)) {
+                    return last_result;
+                }
             }
             Token::String(s) => {
-                return Token::String(s.to_owned());
+                last_result = Token::String(s.to_owned());
+                if i + 1 >= tokens.len() || !matches!(tokens[i + 1], Token::Symbol(_)) {
+                    return last_result;
+                }
             }
             Token::Boolean(b) => {
-                return Token::Boolean(*b);
+                last_result = Token::Boolean(*b);
+                if i + 1 >= tokens.len() || !matches!(tokens[i + 1], Token::Symbol(_)) {
+                    return last_result;
+                }
             }
             Token::Symbol(s) => {
                 if let Symbol::Equal = s {
@@ -39,7 +54,10 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                         let value = eval(vec![tokens[i].clone()], variables.clone());
                         variables.insert(name.clone(), value.clone());
                         println!("Assigned {} = {:?}", name, value);
+                        last_result = value;
                     }
+                } else if let Symbol::Semicolon = s {
+                    // 세미콜론은 그냥 넘어감
                 }
             }
             Token::Function(name, args) => {
@@ -67,7 +85,7 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                         std::io::stdout().flush().unwrap();
                     }
                 }
-                i += 1;
+                last_result = Token::Integer(0); // 함수 실행 결과
             }
             Token::If(condition, _) => {
                 println!("var {:?}", variables);
@@ -93,15 +111,13 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
             Token::Block(tokens) => {
                 println!("Processing Block: {:?}", tokens);
                 if tokens.is_empty() {
-                    return Token::Integer(0);
-                }
-
-                if let Token::String(_) = tokens[0] {
+                    last_result = Token::Integer(0);
+                } else if let Token::String(_) = tokens[0] {
                     let calc_value = calc_str(tokens.to_owned(), variables.clone());
                     if let Token::None = calc_value {
-                        return eval(tokens.to_owned(), variables.clone());
+                        last_result = eval(tokens.to_owned(), variables.clone());
                     } else {
-                        return calc_value;
+                        last_result = calc_value;
                     }
                 } else {
                     // calc_fi 대신 calc_with_variables 사용
@@ -113,17 +129,22 @@ pub fn eval(tokens: Vec<Token>, mut variables: HashMap<String, Token>) -> Token 
                             calc_with_variables(tokens.to_owned(), variables.clone());
                         println!("calc_with_variables result: {:?}", calc_with_vars);
                         if let Token::None = calc_with_vars {
-                            return eval(tokens.to_owned(), variables.clone());
+                            last_result = eval(tokens.to_owned(), variables.clone());
                         } else {
-                            return calc_with_vars;
+                            last_result = calc_with_vars;
                         }
                     } else {
-                        return calc_value;
+                        last_result = calc_value;
                     }
+                }
+
+                // 블록이 단독으로 있으면 결과 반환
+                if tokens.len() == 1 {
+                    return last_result;
                 }
             }
             _ => {
-                // i += 1;
+                // 다른 토큰들은 그냥 넘어감
             }
         }
         i += 1;
