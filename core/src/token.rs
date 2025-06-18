@@ -6,12 +6,15 @@ use crate::class::Class;
 pub enum Symbol {
     Equal,
     Is,
+    Greater,
+    Less,
     Plus,
     Minus,
     Multiply,
     Divide,
     Comma,
     Semicolon,
+    Mod,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -25,10 +28,11 @@ pub enum Token {
     Symbol(Symbol),
     Block(Vec<Token>),
     Array(Vec<Vec<Token>>),
-    Repeat(Box<Token>),
+    Repeat(Vec<Token>),
     Return(Vec<Token>),
     Include(String),
-    If(Vec<Token>, Vec<Token>),
+    If(Vec<Token>),
+    Else,
 
     None,
 }
@@ -75,6 +79,14 @@ impl Token {
                         Token::Identifier("rhs".to_string()),
                     ]),
                 );
+                class.add_method(
+                    "!!mod!!".to_string(),
+                    Token::Block(vec![
+                        Token::Integer(i.to_owned()),
+                        Token::Symbol(Symbol::Mod),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
                 class
             }
             Token::Float(f) => {
@@ -113,6 +125,14 @@ impl Token {
                         Token::Identifier("rhs".to_string()),
                     ]),
                 );
+                class.add_method(
+                    "!!mod!!".to_string(),
+                    Token::Block(vec![
+                        Token::Float(f.to_owned()),
+                        Token::Symbol(Symbol::Mod),
+                        Token::Identifier("rhs".to_string()),
+                    ]),
+                );
                 class
             }
             Token::String(s) => {
@@ -143,7 +163,14 @@ impl Token {
                     Default::default(),
                     Default::default(),
                 );
-                class.add_method("!!format!!".to_string(), Token::String(b.to_string()));
+                class.add_method(
+                    "!!format!!".to_string(),
+                    Token::String(
+                        b.to_string()
+                            .replace("true", "tru")
+                            .replace("false", "falz"),
+                    ),
+                );
                 class
             }
             _ => Class::new("".to_string(), Default::default(), Default::default()),
@@ -163,7 +190,10 @@ impl std::fmt::Display for Token {
             return write!(f, "{}", ff);
         }
         if let Token::Boolean(b) = self {
-            return write!(f, "{}", b);
+            if *b {
+                return write!(f, "tru");
+            }
+            return write!(f, "falz");
         }
         if let Token::Identifier(i) = self {
             return write!(f, "{}", i);

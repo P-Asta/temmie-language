@@ -37,6 +37,8 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
     let mut tokens = Vec::new();
     let log = log::Logging::new(path.clone());
     'main: loop {
+        // println!("{:?}({})", code[i], i);
+        // std::thread::sleep(std::time::Duration::from_millis(100));
         if i >= code.len() {
             break 'main;
         }
@@ -209,6 +211,42 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 i = start;
             }
         }
+        if c == 'e' {
+            let start = i;
+            'sub: loop {
+                i += 1;
+                let c = code[i];
+                if c == '\0' {
+                    log.error((reading_y, reading_x), "TODO".to_string());
+                }
+                if c == '(' || c == ' ' {
+                    break 'sub;
+                }
+                if c.is_alphabetic() {
+                    continue 'sub;
+                } else {
+                    break 'sub;
+                }
+            }
+            let code_str: String = code[start..i].iter().collect();
+
+            if code_str == "else" {
+                'sub: loop {
+                    i += 1;
+                    let c = code[i];
+                    if c == '\0' {
+                        log.error((reading_y, reading_x), "TODO".to_string());
+                    }
+                    if c == '{' {
+                        break 'sub;
+                    }
+                }
+                tokens.push(Token::Else);
+                continue 'main;
+            } else {
+                i = start;
+            }
+        }
         if c == 'i' {
             let start = i;
             'sub: loop {
@@ -253,7 +291,6 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 i -= 1;
                 condition_code.push('\0');
                 let condition_token = tokenizer(path.clone(), condition_code);
-                let start = i + 1;
                 'sub: loop {
                     i += 1;
                     let c = code[i];
@@ -264,11 +301,8 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                         break 'sub;
                     }
                 }
-                let mut block_code = code[start..i].to_vec();
                 i -= 1;
-                block_code.push('\0');
-                let block_token = tokenizer(path.clone(), block_code);
-                tokens.push(Token::If(condition_token, block_token));
+                tokens.push(Token::If(condition_token));
             } else {
                 i = start;
             }
@@ -280,6 +314,9 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 i += 1;
                 let c = code[i];
                 if c == '\0' {
+                    break 'sub;
+                }
+                if c == '(' || c == ' ' {
                     break 'sub;
                 }
                 if c.is_alphabetic() {
@@ -306,7 +343,7 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                 let return_token = tokenizer(path.clone(), return_code);
                 tokens.push(Token::Return(return_token));
             } else if code_str == "repet" {
-                let start = i + 1;
+                let start = i;
                 'sub: loop {
                     i += 1;
                     let c = code[i];
@@ -317,33 +354,24 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
                         break 'sub;
                     }
                 }
-                let mut repeat_code = code[start..i].to_vec();
+                let condition_code: String = code[start..i].iter().collect();
+                let condition_code = condition_code.trim().replace("(", "{").replace(")", "}");
+                let mut condition_code: Vec<char> = condition_code.chars().collect();
                 i -= 1;
-                repeat_code.push('\0');
-                let repeat_token = tokenizer(path.clone(), repeat_code);
-                match &repeat_token[0] {
-                    Token::Integer(i) => {
-                        if i <= &0 {
-                            log.error(
-                                (reading_y, start - 1),
-                                format!(
-                                    "INVAL!D REP3T C0UNT: MUST BE GR@TER THAN 0, G0T -1!! W@HAT??"
-                                ),
-                            );
-                        }
-                        tokens.push(Token::Repeat(Box::new(Token::Integer(*i))));
+                condition_code.push('\0');
+                let condition_token = tokenizer(path.clone(), condition_code);
+                'sub: loop {
+                    i += 1;
+                    let c = code[i];
+                    if c == '\0' {
+                        break 'sub;
                     }
-                    Token::Identifier(i) => {
-                        tokens.push(Token::Repeat(Box::new(Token::Identifier(i.to_owned()))));
-                    }
-                    _ => {
-                        log.error(
-                            (reading_y, start - 1),
-                            "INVAL!D REP3T EXPRESSION: MUST BE @N !NT3G3R OR !D3NT!F!3R!!"
-                                .to_string(),
-                        );
+                    if c == '{' {
+                        break 'sub;
                     }
                 }
+                i -= 1;
+                tokens.push(Token::Repeat(condition_token));
             } else {
                 i = start;
             }
@@ -437,6 +465,18 @@ pub fn tokenizer(path: String, code: Vec<char>) -> Vec<Token> {
             }
             '/' => {
                 tokens.push(Token::Symbol(Symbol::Divide));
+                i += 1;
+            }
+            '%' => {
+                tokens.push(Token::Symbol(Symbol::Mod));
+                i += 1;
+            }
+            '>' => {
+                tokens.push(Token::Symbol(Symbol::Greater));
+                i += 1;
+            }
+            '<' => {
+                tokens.push(Token::Symbol(Symbol::Less));
                 i += 1;
             }
             _ => {}

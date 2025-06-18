@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::token::{FakeFloat, Symbol, Token};
+use crate::{
+    log,
+    token::{FakeFloat, Symbol, Token},
+};
 
 pub fn calc(tokens: Vec<Token>) -> Token {
     calc_with_variables(tokens, HashMap::new())
@@ -34,7 +37,7 @@ pub fn calc_with_variables(tokens: Vec<Token>, variables: HashMap<String, Token>
             }
 
             match op {
-                Symbol::Multiply | Symbol::Divide => {
+                Symbol::Multiply | Symbol::Divide | Symbol::Mod => {
                     let next_token = tokens[i].clone();
                     let mut hash = HashMap::new();
                     hash.insert("rhs".to_string(), next_token);
@@ -43,13 +46,16 @@ pub fn calc_with_variables(tokens: Vec<Token>, variables: HashMap<String, Token>
                         Symbol::Multiply => current
                             .change2class()
                             .run_method("!!mul!!".to_string(), hash.clone()),
+                        Symbol::Mod => current
+                            .change2class()
+                            .run_method("!!mod!!".to_string(), hash.clone()),
                         Symbol::Divide => current
                             .change2class()
                             .run_method("!!div!!".to_string(), hash.clone()),
                         _ => unreachable!(),
                     };
                 }
-                Symbol::Plus | Symbol::Minus | Symbol::Is => {
+                Symbol::Plus | Symbol::Minus | Symbol::Is | Symbol::Greater | Symbol::Less => {
                     result_tokens.push(current);
                     result_tokens.push(Token::Symbol(op.clone()));
                     current = tokens[i].clone();
@@ -92,6 +98,18 @@ pub fn calc_with_variables(tokens: Vec<Token>, variables: HashMap<String, Token>
                     result_tokens_is.push(Token::Symbol(Symbol::Is));
                     current = next_token.change2class();
                 }
+                Symbol::Greater => {
+                    result_tokens_is
+                        .push(current.run_method("!!format!!".to_string(), HashMap::new()));
+                    result_tokens_is.push(Token::Symbol(Symbol::Greater));
+                    current = next_token.change2class();
+                }
+                Symbol::Less => {
+                    result_tokens_is
+                        .push(current.run_method("!!format!!".to_string(), HashMap::new()));
+                    result_tokens_is.push(Token::Symbol(Symbol::Less));
+                    current = next_token.change2class();
+                }
                 _ => {}
             }
         }
@@ -100,15 +118,43 @@ pub fn calc_with_variables(tokens: Vec<Token>, variables: HashMap<String, Token>
 
     let formatted = current.run_method("!!format!!".to_string(), HashMap::new());
 
-    // is 연산 처리 - 여기가 핵심!
+    // is 연산 처리
     if !result_tokens_is.is_empty() {
         result_tokens_is.push(formatted);
         if result_tokens_is.len() == 3 {
             if let Token::Symbol(Symbol::Is) = result_tokens_is[1] {
-                // 두 값이 같은지 비교하여 Boolean 반환
                 let left = &result_tokens_is[0];
                 let right = &result_tokens_is[2];
                 return Token::Boolean(left == right);
+            }
+            if let Token::Symbol(Symbol::Greater) = result_tokens_is[1] {
+                let left = &result_tokens_is[0];
+                let right = &result_tokens_is[2];
+                if let (Token::String(l), Token::String(r)) = (left, right) {
+                    if l.parse::<f64>().is_ok() && r.parse::<f64>().is_ok() {
+                        return Token::Boolean(
+                            l.parse::<f64>().unwrap() > r.parse::<f64>().unwrap(),
+                        );
+                    } else {
+                        log::Logging::new("RUNTIME".to_string())
+                            .error((0, 0), "> operator can only compare integers.".to_string());
+                    }
+                }
+            }
+
+            if let Token::Symbol(Symbol::Less) = result_tokens_is[1] {
+                let left = &result_tokens_is[0];
+                let right = &result_tokens_is[2];
+                if let (Token::String(l), Token::String(r)) = (left, right) {
+                    if l.parse::<f64>().is_ok() && r.parse::<f64>().is_ok() {
+                        return Token::Boolean(
+                            l.parse::<f64>().unwrap() < r.parse::<f64>().unwrap(),
+                        );
+                    } else {
+                        log::Logging::new("RUNTIME".to_string())
+                            .error((0, 0), "< operator can only compare integers.".to_string());
+                    }
+                }
             }
         }
         return Token::None;
@@ -117,6 +163,11 @@ pub fn calc_with_variables(tokens: Vec<Token>, variables: HashMap<String, Token>
     // 결과 타입 변환
     match formatted {
         Token::String(s) => {
+            if s == "tru" {
+                return Token::Boolean(true);
+            } else if s == "falz" {
+                return Token::Boolean(false);
+            }
             if let Ok(i) = s.parse::<isize>() {
                 Token::Integer(i)
             } else if let Ok(f) = s.parse::<f64>() {
@@ -190,6 +241,12 @@ pub fn calc_fi(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
         if let Token::Symbol(Symbol::Is) = token {
             has_is_operator = true;
         }
+        if let Token::Symbol(Symbol::Greater) = token {
+            has_is_operator = true;
+        }
+        if let Token::Symbol(Symbol::Less) = token {
+            has_is_operator = true;
+        }
         if !matches!(
             token,
             Token::Symbol(_) | Token::Float(_) | Token::Integer(_)
@@ -247,6 +304,7 @@ pub fn calc_fi(tokens: Vec<Token>, variables: HashMap<String, Token>) -> Token {
                 match symbol {
                     Symbol::Multiply => result *= next_val,
                     Symbol::Divide => result /= next_val,
+                    Symbol::Mod => result %= next_val,
                     _ => (),
                 }
                 i += 2;

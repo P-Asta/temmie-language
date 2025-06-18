@@ -11,6 +11,8 @@ pub struct Arg {
 }
 
 fn main() {
+    env_logger::init();
+
     // let args = Arg::parse();
     // let path = args.path.clone();
     let path = "test/main.tem";

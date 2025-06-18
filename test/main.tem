@@ -1,3 +1,6 @@
-a = 2 + 3;
-a = a is 5;
-prnt(a);
+def(a, b, c) {
+    a + b + c
+}
+
+z = def(1, 2, 3);
+prnt("z: ", z);

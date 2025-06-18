@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 colorfully = "0.2.2"
 lazy_static = { version = "1.5.0", features = ["spin"] }
+log = "0.4.27"

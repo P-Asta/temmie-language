@@ -34,7 +34,7 @@ impl Class {
         let function = self.methods.get(&name).unwrap();
         let mut merge_fields = self.fields.clone();
         merge_fields.extend(args);
-        eval(vec![function.to_owned()], merge_fields)
+        eval(vec![function.to_owned()], merge_fields).0
     }
 }
 
