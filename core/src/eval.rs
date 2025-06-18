@@ -148,27 +148,37 @@ pub fn eval(
                             warn!("함수 '{}' 정의", name);
                             let mut blocks = block.clone();
 
-                            // 매개변수를 $n 형태로 변환
-                            let mut n = 0;
-                            for arg in args {
-                                if let Some(param_name) = arg.first() {
-                                    blocks = blocks
-                                        .into_iter()
-                                        .map(|token| {
-                                            if let Token::Identifier(ref id) = token {
-                                                if let Token::Identifier(ref param_id) = param_name
-                                                {
-                                                    if id == param_id {
-                                                        return Token::Identifier(format!("${n}"));
-                                                    }
-                                                }
+                            // 모든 매개변수 이름을 먼저 수집
+                            let param_mappings: Vec<(String, String)> = args
+                                .iter()
+                                .enumerate()
+                                .filter_map(|(idx, arg)| {
+                                    if let Some(Token::Identifier(param_name)) = arg.first() {
+                                        Some((param_name.clone(), format!("${}", idx)))
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .collect();
+
+                            warn!("매개변수 매핑: {:?}", param_mappings);
+
+                            // 한 번에 모든 치환 수행
+                            blocks = blocks
+                                .into_iter()
+                                .map(|token| {
+                                    if let Token::Identifier(ref id) = token {
+                                        for (param_name, placeholder) in &param_mappings {
+                                            if id == param_name {
+                                                return Token::Identifier(placeholder.clone());
                                             }
-                                            token
-                                        })
-                                        .collect();
-                                    n += 1;
-                                }
-                            }
+                                        }
+                                    }
+                                    token
+                                })
+                                .collect();
+
+                            warn!("치환된 함수 블록: {:?}", blocks);
                             variables.insert(name.clone(), Token::Block(blocks));
                             i += 1; // Block 토큰도 건너뛰기
                         }
@@ -179,15 +189,54 @@ pub fn eval(
 
                         if let Some(Token::Block(block)) = function {
                             warn!("함수 '{}' 실행", name);
-                            let mut n = 0;
                             let mut func_variables = variables.clone();
-                            for arg in args {
-                                // 인자를 먼저 평가
-                                let (arg_value, _) = eval(arg.clone(), variables.clone());
-                                func_variables.insert(format!("${n}"), arg_value);
-                                n += 1;
+
+                            // 인자 바인딩 개선
+                            for (idx, arg) in args.iter().enumerate() {
+                                if let Some(first_token) = arg.first() {
+                                    let arg_value = match first_token {
+                                        Token::Integer(n) => Token::Integer(*n),
+                                        Token::Float(f) => Token::Float(f.clone()),
+                                        Token::String(s) => Token::String(s.clone()),
+                                        Token::Boolean(b) => Token::Boolean(*b),
+                                        Token::Identifier(var_name) => {
+                                            // 변수인 경우 값 조회
+                                            variables
+                                                .get(var_name)
+                                                .cloned()
+                                                .unwrap_or_else(|| first_token.clone())
+                                        }
+                                        _ => first_token.clone(),
+                                    };
+                                    func_variables.insert(format!("${}", idx), arg_value.clone());
+                                    warn!("매개변수 바인딩: ${} = {:?}", idx, arg_value);
+                                }
                             }
-                            let (result, _) = eval(block.clone(), func_variables);
+
+                            warn!("실행할 함수 블록: {:?}", block);
+                            warn!("함수 변수 상태: {:?}", func_variables);
+
+                            // 블록을 계산식으로 처리
+                            let calc_result = calc_fi(block.clone(), func_variables.clone());
+                            let result = if let Token::None = calc_result {
+                                let calc_result =
+                                    calc_with_variables(block.clone(), func_variables.clone());
+                                if let Token::None = calc_result {
+                                    let calc_result = calc(block.clone());
+                                    if let Token::None = calc_result {
+                                        let (result, _) = eval(block.clone(), func_variables);
+                                        result
+                                    } else {
+                                        calc_result
+                                    }
+                                } else {
+                                    calc_result
+                                }
+                            } else {
+                                calc_result
+                            };
+
+                            warn!("함수 '{}' 실행 결과: {:?}", name, result);
                             last_result = result;
                         } else {
                             let log = log::Logging::new("RUNTIME".to_string());
@@ -196,6 +245,7 @@ pub fn eval(
                     }
                 }
             }
+
             Token::If(condition) => {
                 // 조건에서 변수 치환
                 let substituted_condition = substitute_variables(condition.to_owned(), &variables);
