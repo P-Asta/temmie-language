@@ -1,6 +1,8 @@
-def(a, b, c) {
-    a + b + c
+a = 0;
+repet 10 {
+    a = a + 1;
+    b = a % 2 is 0;
+    if b {
+        prnt(a, "는 짝수");
+    }
 }
-
-z = def(1, 2, 3);
-prnt("z: ", z);
