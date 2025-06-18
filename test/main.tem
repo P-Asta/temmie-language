@@ -1,6 +1,6 @@
-def(a, b, c) {
+awesome(a, b, c) {
     a * b * c
 }
 
-z = def(12, 2, 3);
+z = awesome(12, 2, 3);
 prnt("z: ", z);

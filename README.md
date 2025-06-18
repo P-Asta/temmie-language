@@ -22,6 +22,15 @@ repet 10 {
 }
 ```
 
+```tem
+awesome(a, b, c) {
+    a * b * c
+}
+
+z = awesome(12, 2, 3);
+prnt("z: ", z);
+```
+
 ## T0D0!!
 
 - [x] T0KENIZING ALl typ3
@@ -31,6 +40,7 @@ repet 10 {
 - [x] T0KENIZING Retun
 - [x] T0KENIZING Bl0ck
 - [x] T0KENIZING If
+- [x] T0KENIZING Funct!0n!
 - [ ] T0KENIZING Includ
 - [ ] T0KENIZING Cl@ss
 - [ ] T0KENIZING Meth0d
@@ -44,6 +54,7 @@ repet 10 {
 - [x] Ev@l Repet
 - [x] Ev@l Bl0ck
 - [x] Ev@l If
+- [x] Ev@l Funct!0n!
 - [ ] Ev@l Includ
 - [ ] Ev@l Cl@ss
 - [ ] Ev@l Meth0d
